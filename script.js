@@ -5,6 +5,7 @@ function loadMovies(){
     .then(r=>r.json())
     .then(d=>{
       data = d;
+      setBanner(data[0].thumbnail, data[0].title, "");
       renderMovies();
     });
 }
@@ -14,11 +15,20 @@ function loadSeries(){
     .then(r=>r.json())
     .then(d=>{
       data = d;
+      setBanner(data[0].thumbnail, data[0].name, data[0].description);
       renderSeries();
     });
 }
 
-// ===== FILMES =====
+// BANNER
+function setBanner(img, title, desc){
+  const banner = document.getElementById('banner');
+  banner.style.backgroundImage = `url(${img})`;
+  document.getElementById('bannerTitle').innerText = title;
+  document.getElementById('bannerDesc').innerText = desc;
+}
+
+// FILMES
 function renderMovies(){
   const rows = document.getElementById('rows');
   rows.innerHTML = '';
@@ -37,8 +47,8 @@ function renderMovies(){
       card.className = 'min-w-[220px] cursor-pointer hover:scale-110 transition';
 
       card.innerHTML = `
-        <img src='${item.thumbnail}' class='rounded'>
-        <p class='mt-2 text-sm'>${item.title}</p>
+        <img src="${item.thumbnail}" class="rounded">
+        <p class="mt-2 text-sm">${item.title}</p>
       `;
 
       card.onclick = () => play(item.video_url);
@@ -50,58 +60,45 @@ function renderMovies(){
   });
 }
 
-// ===== SÉRIES =====
+// SÉRIES
 function renderSeries(){
   const rows = document.getElementById('rows');
   rows.innerHTML = '';
 
   data.forEach(series => {
-    const card = document.createElement('div');
-    card.className = 'mb-6 p-4 bg-gray-900 rounded cursor-pointer hover:bg-gray-800';
+    const container = document.createElement('div');
+    container.className = 'mb-8';
 
-    card.innerHTML = `
-      <h2 class='text-xl font-bold'>${series.name}</h2>
-      <p class='text-gray-400'>${series.description}</p>
+    container.innerHTML = `
+      <h2 class="text-2xl font-bold">${series.name}</h2>
+      <p class="text-gray-400 mb-3">${series.description}</p>
     `;
 
-    card.onclick = () => loadSeriesData(series.id);
-    rows.appendChild(card);
+    series.seasons.forEach(season => {
+      const title = document.createElement('h3');
+      title.className = 'text-xl mt-4 mb-2';
+      title.innerText = `Temporada ${season.season}`;
+      container.appendChild(title);
+
+      season.episodes.forEach(ep => {
+        const div = document.createElement('div');
+        div.className = 'mb-2 p-3 bg-gray-800 rounded cursor-pointer';
+
+        div.innerHTML = `
+          <p class="font-bold">${ep.title}</p>
+          <p class="text-gray-400 text-sm">${ep.description}</p>
+        `;
+
+        div.onclick = () => play(ep.video_url);
+        container.appendChild(div);
+      });
+    });
+
+    rows.appendChild(container);
   });
 }
 
-// ===== CARREGA SÉRIE COMPLETA =====
-function loadSeriesData(id){
-  fetch(`series_${id}.json`)
-    .then(r=>r.json())
-    .then(series=>{
-      const rows = document.getElementById('rows');
-      rows.innerHTML = `<h1 class='text-2xl mb-4'>${series.name}</h1>`;
-
-      series.seasons.forEach(season => {
-
-        const title = document.createElement('h2');
-        title.className = 'text-xl mt-6 mb-2';
-        title.innerText = `Temporada ${season.season}`;
-        rows.appendChild(title);
-
-        season.episodes.forEach(ep => {
-          const div = document.createElement('div');
-          div.className = 'mb-3 p-3 bg-gray-800 rounded cursor-pointer';
-
-          div.innerHTML = `
-            <p class='font-bold'>${ep.title}</p>
-            <p class='text-gray-400 text-sm'>${ep.description}</p>
-          `;
-
-          div.onclick = () => play(ep.video_url);
-          rows.appendChild(div);
-        });
-
-      });
-    });
-}
-
-// ===== PLAYER =====
+// PLAYER
 function play(url){
   const v = document.createElement('video');
   v.src = url;
