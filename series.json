@@ -1,7 +1,30 @@
 [
   {
-    "id": "breakingbad",
     "name": "Breaking Bad",
-    "description": "Um professor vira fabricante de drogas."
-  }
+    "description": "Um professor vira fabricante de drogas.",
+    "thumbnail": "https://via.placeholder.com/1200x600",
+    "seasons": [
+      {
+        "season": 1,
+        "episodes": [
+          {
+            "title": "Episódio 1",
+            "description": "Início",
+            "video_url": "https://www.w3schools.com/html/movie.mp4"
+          }
+        ]
+      },
+      {
+        "season": 2,
+        "episodes": [
+          {
+            "title": "Episódio 1",
+            "description": "Nova fase",
+            "video_url": "https://www.w3schools.com/html/mov_bbb.mp4"
+          }
+        ]
+      }
+    ]
+  },
+  
 ]
