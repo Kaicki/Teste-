@@ -1,32 +1,337 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyFlix</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>tiaflix</title>
+<style>
+  :root{
+    --bg:#040404;
+    --muted:#bdbdbd;
+    --accent:#00a8ff;
+    --card-w:160px;
+    --card-h:240px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:#fff;
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    position:fixed;top:0;left:0;right:0;height:60px;
+    display:flex;align-items:center;padding:0 20px;z-index:60;
+    background:linear-gradient(180deg, rgba(4,4,4,0.85), transparent);
+  }
+  .logo{color:#E50914;font-weight:800;font-size:24px;letter-spacing:1px}
+
+  .hero{
+    width:100%;
+    height:75vh;
+    min-height:180px;
+    background-size:cover;
+    background-position:center;
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    padding:38px 58px;
+    transition:background-image .5s ease;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:0;height:45%;
+    background:linear-gradient(to top, rgba(4,4,4,1), rgba(4,4,4,0));
+  }
+  .hero-content{position:relative;z-index:3;max-width:820px;display:flex;gap:14px;align-items:flex-start}
+  .hero-thumb{width:120px;height:170px;object-fit:cover;border-radius:8px;flex-shrink:0}
+  .hero-text h1{font-size:22px;margin-bottom:6px}
+  .hero-text p{color:var(--muted);font-size:14px;line-height:1.4;margin-bottom:10px}
+  .btn{border:0;padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer;font-size:13px}
+  .btn-play{background:rgba(255,255,255,0.95);color:#000}
+  .btn-info{background:rgba(109,109,110,0.7);color:#fff}
+
+  main{padding:12px 0 40px;margin-top:60px}
+  .section{margin-top:14px}
+  .section h2{font-size:16px;margin-left:18px;margin-bottom:8px;color:#e6e6e6}
+
+  .row{display:flex;gap:8px;padding:6px 18px 12px;overflow-x:auto;scroll-behavior:smooth}
+  .row::-webkit-scrollbar{height:0;display:none}
+  .card{width:var(--card-w);height:var(--card-h);border-radius:6px;overflow:hidden;flex:0 0 auto;cursor:pointer;transition:transform .18s,box-shadow .18s}
+  .card img{width:100%;height:100%;object-fit:cover;display:block}
+  .card:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 20px 40px rgba(0,0,0,0.6);z-index:30}
+
+  .info-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10010;
+    padding: 20px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
+    backdrop-filter: blur(6px);
+  }
+
+  .info-card {
+    width: 92%;
+    max-width: 920px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(8,8,8,0.95), rgba(12,12,12,0.95));
+    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+    transform: translateY(24px) scale(0.98);
+    opacity: 0;
+    transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .22s;
+    position: relative;
+  }
+  .info-card.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .info-top {
+    display: flex;
+    gap: 18px;
+    padding: 20px;
+    align-items: flex-start;
+  }
+
+  .info-poster {
+    width: 260px;
+    height: 380px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .info-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .info-title {
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .info-meta {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .info-desc {
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 15px;
+    max-height: 7.2em;
+    overflow: auto;
+    padding-right: 6px;
+  }
+
+  .info-actions {
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+    flex-wrap:wrap;
+  }
+  .action-play {
+    background: var(--accent);
+    color: #000;
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-weight:700;
+    border: none;
+    cursor: pointer;
+  }
+  .action-list {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+  }
+
+  .info-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  .info-details {
+    display:flex;
+    gap:12px;
+    padding:0 20px 20px 20px;
+    align-items:center;
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  @media (max-width:1000px){
+    .info-poster{width:200px;height:300px}
+    .info-top{padding:16px}
+  }
+  @media (max-width:600px){
+    .info-card{width:96%;}
+    .info-top{flex-direction:column;align-items:center}
+    .info-poster{width:180px;height:260px}
+    .info-body{text-align:center}
+    .info-desc{max-height:none}
+  }
+
+  .player-modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:10020;padding:16px}
+  .player-box{width:90%;max-width:1100px;background:#000;border-radius:8px;overflow:hidden;position:relative}
+  .player-iframe{width:100%;height:70vh;border:0}
+  .player-close{position:absolute;top:10px;right:10px;background:var(--accent);border:none;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
+</style>
 </head>
-<body class="text-white">
+<body>
 
-<div class="fixed top-0 w-full flex justify-between items-center px-6 py-4 bg-black z-50">
-  <h1 class="text-2xl font-bold text-red-600">MyFlix</h1>
-  <div class="flex gap-4">
-    <button onclick="loadMovies()">Filmes</button>
-    <button onclick="loadSeries()">Séries</button>
+<header><div class="logo">TIAFLIX</div></header>
+
+<section id="hero" class="hero">
+  <div class="hero-content">
+    <img id="heroThumb" class="hero-thumb" src="">
+    <div class="hero-text">
+      <h1 id="heroTitle">Carregando...</h1>
+      <p id="heroDesc"></p>
+      <button id="heroPlay" class="btn btn-play">▶ Assistir</button>
+      <button id="heroInfo" class="btn btn-info">ℹ Info</button>
+    </div>
+  </div>
+</section>
+
+<main id="mainContent"></main>
+
+<div id="infoModal" class="info-modal">
+  <div class="info-card" id="infoCard">
+    <button id="infoClose">✖</button>
+    <div class="info-top">
+      <div id="infoPoster" class="info-poster"></div>
+      <div class="info-body">
+        <div id="infoTitle"></div>
+        <div id="infoCategory"></div>
+        <div id="infoDesc"></div>
+        <button id="infoPlay">▶ Assistir</button>
+      </div>
+    </div>
+    <div id="infoDetails"></div>
   </div>
 </div>
 
-<!-- BANNER -->
-<div id="banner" class="mt-16 h-[60vh] flex items-end p-6 bg-cover bg-center">
-  <div>
-    <h1 id="bannerTitle" class="text-4xl font-bold"></h1>
-    <p id="bannerDesc" class="max-w-xl text-gray-300"></p>
+<div id="playerModal" class="player-modal">
+  <div class="player-box">
+    <button id="closePlayer">Fechar</button>
+    <iframe id="playerFrame" class="player-iframe"></iframe>
   </div>
 </div>
 
-<div id="rows" class="pt-6 px-6"></div>
+<script>
+const movies = [
+  {
+    title:"A ERA DO GELO",
+    description:"Sid e Manny enfrentam aventuras congelantes.",
+    poster:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJK3S7XRsTroff4lsEaQIynHavw6AI0Oaszh6VOrijtPG_muCUbekkT-sQzxHFEHYYuAsWVXRGX6t1ycigVuQF8yJrqzGbbOgc54WNldI&s=10",
+    category:"Animação",
+    year:2002,
+    driveId:"SEU_ID_AQUI"
+  },
 
-<script src="script.js"></script>
+  // 🔥 SÉRIE
+  {
+    title:"Breaking Bad",
+    description:"Um professor vira produtor de droga.",
+    poster:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTAFItb28f4A67D7_kyY8RjiMx3ansPUrekwrBMr4jlw&s=10",
+    category:"Séries",
+    year:2008,
+    type:"series",
+    seasons:[
+      {
+        season:1,
+        episodes:[
+          {title:"Ep 1", driveId:"SEU_ID_AQUI"},
+          {title:"Ep 2", driveId:"SEU_ID_AQUI"}
+        ]
+      }
+    ]
+  }
+];
+
+// =========================
+// PLAYER
+// =========================
+function openPlayer(id){
+  playerFrame.src=`https://drive.google.com/file/d/${id}/preview`;
+  playerModal.style.display="flex";
+}
+
+closePlayer.onclick=()=>{
+  playerFrame.src="";
+  playerModal.style.display="none";
+};
+
+// =========================
+// SÉRIES
+// =========================
+function renderEpisodes(series){
+  infoDetails.innerHTML="";
+
+  series.seasons.forEach(season=>{
+    const title=document.createElement("h3");
+    title.textContent="Temporada "+season.season;
+    infoDetails.appendChild(title);
+
+    season.episodes.forEach(ep=>{
+      const btn=document.createElement("button");
+      btn.textContent=ep.title;
+      btn.onclick=()=>openPlayer(ep.driveId);
+      infoDetails.appendChild(btn);
+    });
+  });
+}
+
+// =========================
+// INFO
+// =========================
+function openInfo(movie){
+  infoModal.style.display="flex";
+  infoTitle.textContent=movie.title;
+  infoDesc.textContent=movie.description;
+
+  if(movie.type==="series"){
+    renderEpisodes(movie);
+    infoPlay.onclick=()=>renderEpisodes(movie);
+  }else{
+    infoPlay.onclick=()=>openPlayer(movie.driveId);
+  }
+}
+
+infoClose.onclick=()=>infoModal.style.display="none";
+
+// =========================
+// LISTA
+// =========================
+function load(){
+  movies.forEach(movie=>{
+    const div=document.createElement("div");
+    div.textContent=movie.title;
+    div.onclick=()=>openInfo(movie);
+    mainContent.appendChild(div);
+  });
+}
+
+load();
+</script>
+
 </body>
 </html>
